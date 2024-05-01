@@ -20,7 +20,6 @@ app.use(
 );
 
 mongoose.connect(process.env.MONGO_URL);
-
 app.get("/test", (req, res) => {
   res.json("test ok");
 });
@@ -39,5 +38,14 @@ app.post("/register", async (req, res) => {
   }
 });
 
+// app.post('/login',async(req,req)=>{
+//   const {email,password}=req.body;
+//   const UserDoc=await User.findOne({email});
+//   if (UserDoc){
+//     res.json('found')
+//   }else{
+//     res.json('Not found')
+//   }
+// })
+
 app.listen(4000);
-// z9mutX73EeuVSOu0
