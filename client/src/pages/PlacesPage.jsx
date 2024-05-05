@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Perks from "../Perks";
+import axios from "axios";
 
 const PlacesPage = () => {
   const { action } = useParams();
@@ -33,7 +34,15 @@ const PlacesPage = () => {
     );
   }
 
-  function addPhotoByLink()
+  async function addPhotoByLink(ev) {
+    ev.preventDefault()
+    const {data:filename}=await axios.post("/upload-by-link", { link: photoLink });
+    setAddedPhoto(prev=>{
+      return [...prev, filename];
+    });
+    setPhotoLink('');
+    console.log(addedPhoto)
+  };
 
   return (
     <div>
@@ -82,7 +91,7 @@ const PlacesPage = () => {
               onChange={(ev) => setAddress(ev.target.value)}
             />
 
-            {preInput("Photos", "More = better")}
+            {preInput("Photos", "Add only jpeg/jpg images")}
             <div className="flex gap-2">
               <input
                 type="text"
@@ -90,11 +99,16 @@ const PlacesPage = () => {
                 value={photoLink}
                 onChange={(ev) => setPhotoLink(ev.target.value)}
               />
-              <button className="bg-gray-200 px-4 rounded-2xl">
+              <button onClick={addPhotoByLink} className="bg-gray-200 px-4 rounded-2xl">
                 Add&nbsp;photo
               </button>
             </div>
-            <div className="mt-2 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            <div className="mt-2 grid gap-2 grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+              {addedPhoto.length>0 && addedPhoto.map((link)=>(
+                <div>
+                  <img className="rounded-2xl" src={'http://localhost:4000/uploads/'+link} alt="image" />
+                </div>
+              ))}
               <button className="flex justify-center gap-1 border bg-transparent rounded-2xl p-8 text-2xl text-gray-500">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

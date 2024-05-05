@@ -7,6 +7,8 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const User = require("./models/User.js");
 const mongoose = require("mongoose");
+const download = require("image-downloader");
+const path = require("path");
 
 const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = "abcdefgh";
@@ -19,6 +21,7 @@ app.use(
   })
 );
 app.use(cookieParser());
+app.use("/uploads", express.static(__dirname + "/uploads"));
 
 mongoose.connect(process.env.MONGO_URL);
 app.get("/test", (req, res) => {
@@ -67,19 +70,32 @@ app.get("/profile", (req, res) => {
   if (token) {
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
       if (err) throw err;
-      const {name,email,_id} = await User.findById(userData.id);
+      const { name, email, _id } = await User.findById(userData.id);
 
-      res.json({name,email,_id});
+      res.json({ name, email, _id });
     });
   } else {
     res.json(null);
   }
 });
 
-app.post('/logout',(req,res)=>{
-  res.cookie('token','').json(true)
-})
+app.post("/logout", (req, res) => {
+  res.cookie("token", "").json(true);
+});
 
+app.post("/upload-by-link", async (req, res) => {
+  const { link } = req.body;
+  const urlPath = path.join(__dirname, "uploads" );
 
+  await download
+    .image({
+      url: link,
+      dest: urlPath,
+    })
+    .then(({ filename }) => {
+      console.log("Saved to", filename); // saved to /path/to/dest/image.jpg
+    })
+    .catch((err) => console.error(err));
+});
 
 app.listen(4000);
