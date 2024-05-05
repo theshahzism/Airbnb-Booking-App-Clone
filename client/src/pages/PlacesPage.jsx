@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import Perks from "../Perks";
 import axios from "axios";
 import PhotosUploader from "../PhotosUploader";
@@ -16,6 +16,7 @@ const PlacesPage = () => {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [maxGuests, setMaxGuests] = useState(1);
+  const [redirect,setRedirect]=useState('')
 
   function inputHeader(text) {
     return <h2 className="text-2xl mt-4">{text}</h2>;
@@ -34,6 +35,24 @@ const PlacesPage = () => {
     );
   }
 
+  async function addNewPlace(ev) {
+    ev.preventDefault();
+    await axios.post("/places", {
+      title,
+      address,
+      addedPhotos,
+      description,
+      perks,
+      extraInfo,
+      checkIn,
+      checkOut,
+    });
+    setRedirect('/account/places')
+  }
+
+  if (redirect){
+    return <Navigate to={redirect} />
+  }
 
   return (
     <div>
@@ -63,7 +82,7 @@ const PlacesPage = () => {
       )}
       {action === "new" && (
         <div>
-          <form action="">
+          <form onSubmit={addNewPlace}>
             {preInput(
               "Title",
               "Title for your place, should be short and catchy as in advertisement"
@@ -83,8 +102,11 @@ const PlacesPage = () => {
             />
 
             {preInput("Photos", "Add only jpeg/jpg images")}
-            <PhotosUploader addedPhotos={addedPhotos} onChange={setAddedPhotos} ></PhotosUploader>
-           
+            <PhotosUploader
+              addedPhotos={addedPhotos}
+              onChange={setAddedPhotos}
+            ></PhotosUploader>
+
             {preInput("Description", "Description of the place")}
             <textarea
               value={description}
