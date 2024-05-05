@@ -35,14 +35,33 @@ const PlacesPage = () => {
   }
 
   async function addPhotoByLink(ev) {
-    ev.preventDefault()
-    const {data:filename}=await axios.post("/upload-by-link", { link: photoLink });
-    setAddedPhoto(prev=>{
-      return [...prev, filename];
+    ev.preventDefault();
+    const { data: filename } = await axios.post("/upload-by-link", {
+      link: photoLink,
     });
-    setPhotoLink('');
-    console.log(addedPhoto)
-  };
+    setAddedPhoto((prev) => {
+      return [...prev, ...filename];
+    });
+    setPhotoLink("");
+  }
+
+  async function uploadPhoto(ev) {
+    const files = ev.target.files;
+    const data = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      data.append("photos", files[i]);
+    }
+    axios
+      .post("/upload", data, {
+        headers: { "Content-type": "multipart/form-data" },
+      })
+      .then((response) => {
+        const { data: filenames } = response;
+        setAddedPhoto((prev) => {
+          return [...prev, ...filenames];
+        });
+      });
+  }
 
   return (
     <div>
@@ -99,17 +118,27 @@ const PlacesPage = () => {
                 value={photoLink}
                 onChange={(ev) => setPhotoLink(ev.target.value)}
               />
-              <button onClick={addPhotoByLink} className="bg-gray-200 px-4 rounded-2xl">
+              <button
+                onClick={addPhotoByLink}
+                className="bg-gray-200 px-4 rounded-2xl"
+              >
                 Add&nbsp;photo
               </button>
             </div>
+
             <div className="mt-2 grid gap-2 grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              {addedPhoto.length>0 && addedPhoto.map((link)=>(
-                <div>
-                  <img className="rounded-2xl" src={'http://localhost:4000/uploads/'+link} alt="image" />
-                </div>
-              ))}
-              <button className="flex justify-center gap-1 border bg-transparent rounded-2xl p-8 text-2xl text-gray-500">
+              {addedPhoto.length > 0 &&
+                addedPhoto.map((link) => (
+                  <div className="h-32 flex ">
+                    <img
+                      className="rounded-2xl w-full object-cover"
+                      src={`http://localhost:4000/${link}`}
+                      alt="image"
+                    />
+                  </div>
+                ))}
+              <label className=" h-32 flex cursor-pointer justify-center gap-1 border bg-transparent rounded-2xl p-8 text-2xl text-gray-500">
+                <input type="file" className="hidden" onChange={uploadPhoto} />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -125,7 +154,7 @@ const PlacesPage = () => {
                   />
                 </svg>
                 Upload
-              </button>
+              </label>
             </div>
             {preInput("Description", "Description of the place")}
             <textarea

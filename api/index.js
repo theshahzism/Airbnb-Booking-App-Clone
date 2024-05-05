@@ -9,6 +9,8 @@ const User = require("./models/User.js");
 const mongoose = require("mongoose");
 const download = require("image-downloader");
 const path = require("path");
+const multer = require("multer");
+const fs = require("fs");
 
 const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = "abcdefgh";
@@ -85,7 +87,7 @@ app.post("/logout", (req, res) => {
 
 app.post("/upload-by-link", async (req, res) => {
   const { link } = req.body;
-  const urlPath = path.join(__dirname, "uploads" );
+  const urlPath = path.join(__dirname, "uploads");
 
   await download
     .image({
@@ -96,6 +98,20 @@ app.post("/upload-by-link", async (req, res) => {
       console.log("Saved to", filename); // saved to /path/to/dest/image.jpg
     })
     .catch((err) => console.error(err));
+});
+
+const photosMiddleware = multer({ dest: "uploads/" });
+app.post("/upload", photosMiddleware.array("photos", 100), (req, res) => {
+  const uploadedFiles = [];
+  for (let i = 0; i < req.files.length; i++) {
+    const { path, originalname } = req.files[i];
+    const parts = originalname.split(".");
+    const ext = parts[parts.length - 1];
+    const newPath = path + "." + ext;
+    fs.renameSync(path, newPath);
+    uploadedFiles.push(newPath.replace("uploads/", ""));
+  }
+  res.json(uploadedFiles);
 });
 
 app.listen(4000);
