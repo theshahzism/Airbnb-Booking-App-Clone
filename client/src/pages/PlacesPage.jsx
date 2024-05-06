@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import PlacesFormPage from "./PlacesFormPage";
 import AccountNav from "../AccountNav";
+import axios from "axios";
 
 const PlacesPage = () => {
-  const [redirect, setRedirect] = useState("");
-
-  if (redirect) {
-    return <Navigate to={redirect} />;
-  }
+  const [places, setPlaces] = useState([]);
+  useEffect(() => {
+    axios.get("/places").then(({ data }) => {
+      setPlaces(data);
+    });
+  }, []);
 
   return (
     <div>
@@ -34,6 +35,22 @@ const PlacesPage = () => {
           </svg>
           Add new place
         </Link>
+      </div>
+      <div className="mt-4">
+        {places.length > 0 &&
+          places.map((place) => (
+            <Link to={'/account/places/'+place._id} className="bg-gray-200 p-4 rounded-2xl flex gap-4 cursor-pointer">
+              <div className="w-32 h-32 bg-gray-100 grow shrink-0 ">
+                {place.photos.length > 0 && (
+                  <img src={place.photos[0]} alt="photos" />
+                )}
+              </div>
+              <div className='grow-0 shrink'>
+                <h2 className="text-xl ">{place.title}</h2>
+                <p className='mt-2 text-sm'>{place.description}</p>
+              </div>
+            </Link>
+          ))}
       </div>
     </div>
   );
