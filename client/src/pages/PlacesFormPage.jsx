@@ -6,7 +6,7 @@ import { Navigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 const PlacesFormPage = () => {
-  const {id}=useParams();
+  const { id } = useParams();
   const [title, setTitle] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
@@ -16,14 +16,14 @@ const PlacesFormPage = () => {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [maxGuests, setMaxGuests] = useState(1);
-  const [redirect,setRedirect]=useState(false);
+  const [redirect, setRedirect] = useState(false);
 
-  useEffect(()=>{
-    if (!id){
+  useEffect(() => {
+    if (!id) {
       return;
     }
-    axios.get('/places/'+id).then(response=>{
-      const {data}=response;
+    axios.get("/places/" + id).then((response) => {
+      const { data } = response;
       setTitle(data.title);
       setAddress(data.address);
       setAddedPhotos(data.photos);
@@ -33,8 +33,8 @@ const PlacesFormPage = () => {
       setCheckOut(data.checkOut);
       setCheckIn(data.checkIn);
       setMaxGuests(data.maxGuests);
-    })
-  },[id])
+    });
+  }, [id]);
 
   function inputDescription(text) {
     return <p className="text-gray-500 text-sm">{text}</p>;
@@ -52,9 +52,9 @@ const PlacesFormPage = () => {
     );
   }
 
-  async function addNewPlace(ev) {
+  async function savePlace(ev) {
     ev.preventDefault();
-    await axios.post("/places", {
+    const placeData = {
       title,
       address,
       addedPhotos,
@@ -64,18 +64,28 @@ const PlacesFormPage = () => {
       checkIn,
       checkOut,
       maxGuests,
-    });
+    };
+    if (id) {
+      // update
+      await axios.put("/places", {
+        id,
+        ...placeData,
+      });
+      setRedirect(true);
+    } else {
+      await axios.post("/places", placeData);
+      setRedirect(true);
+    }
 
-    setRedirect(true);
   }
 
-  if (redirect){
-    return <Navigate to={'/account/places'} />
+  if (redirect) {
+    return <Navigate to={"/account/places"} />;
   }
   return (
     <div>
-      <AccountNav/>
-      <form onSubmit={addNewPlace}>
+      <AccountNav />
+      <form onSubmit={savePlace}>
         {preInput(
           "Title",
           "Title for your place, should be short and catchy as in advertisement"
