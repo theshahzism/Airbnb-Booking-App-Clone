@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PhotosUploader from "../PhotosUploader";
 import Perks from "../Perks";
 import AccountNav from "../AccountNav";
@@ -7,7 +7,6 @@ import axios from "axios";
 
 const PlacesFormPage = () => {
   const {id}=useParams();
-  console.log(id);
   const [title, setTitle] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
@@ -18,6 +17,24 @@ const PlacesFormPage = () => {
   const [checkOut, setCheckOut] = useState("");
   const [maxGuests, setMaxGuests] = useState(1);
   const [redirect,setRedirect]=useState(false);
+
+  useEffect(()=>{
+    if (!id){
+      return;
+    }
+    axios.get('/places/'+id).then(response=>{
+      const {data}=response;
+      setTitle(data.title);
+      setAddress(data.address);
+      setAddedPhotos(data.photos);
+      setDescription(data.description);
+      setPerks(data.perks);
+      setExtraInfo(data.extraInfo);
+      setCheckOut(data.checkOut);
+      setCheckIn(data.checkIn);
+      setMaxGuests(data.maxGuests);
+    })
+  },[id])
 
   function inputDescription(text) {
     return <p className="text-gray-500 text-sm">{text}</p>;
